@@ -227,7 +227,7 @@ void vpi_menu_key_bindings(vui_context_t *vui, void *v)
         // RSTICK
         create_key_bind_button(vui, VANILLA_AXIS_R_UP, abxy_x_ref, l_stick_y_ref - btn_height * 1.5, btn_width, btn_height, layer);
         create_key_bind_button(vui, VANILLA_AXIS_R_DOWN, abxy_x_ref, l_stick_y_ref + btn_height / 2, btn_width, btn_height, layer);
-        create_key_bind_button(vui, VANILLA_AXIS_R_DOWN, abxy_x_ref - btn_width, l_stick_y_ref - btn_height / 2, btn_width, btn_height, layer);
+        create_key_bind_button(vui, VANILLA_AXIS_R_LEFT, abxy_x_ref - btn_width, l_stick_y_ref - btn_height / 2, btn_width, btn_height, layer);
         create_key_bind_button(vui, VANILLA_AXIS_R_RIGHT, abxy_x_ref + btn_width, l_stick_y_ref - btn_height / 2, btn_width, btn_height, layer);
         create_key_bind_button(vui, VANILLA_BTN_R3, abxy_x_ref, l_stick_y_ref - btn_height / 2, btn_width, btn_height, layer);
 
