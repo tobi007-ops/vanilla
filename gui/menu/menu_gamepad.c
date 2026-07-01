@@ -16,15 +16,14 @@ static const uint32_t gICON_COLOUR = 0x222222;
 static int map_buttons[32];
 static size_t map_button_count = 0;
 
-static struct {
-    int button;
-    int ui_button;
-} active_bind_button;
+typedef struct bind_session_t {
+    int vanilla_btn;      // logical input (R_X, R_Y, etc.)
+    int ui_button;        // UI widget id
+    vui_context_t *ctx;
+} bind_session_t;
 
 static void reset_active_bind_button()
 {
-    active_bind_button.button = -1;
-    active_bind_button.ui_button = -1;
 }
 
 static void reset_map_button_list()
@@ -82,13 +81,6 @@ static void update_button_icons(vui_context_t *ctx)
     }
 }
 
-static void animate_button(vui_context_t *ctx, int64_t time, void *userdata)
-{
-    if (active_bind_button.ui_button != -1) {
-        vui_button_update_icon_mod(ctx, active_bind_button.ui_button, ((time / 500000) % 2 == 1) ? gICON_COLOUR : 0xFFFF0000);
-    }
-}
-
 static int set_default_button_icon_mod(vui_context_t *vui, int button)
 {
     vui_button_update_icon_mod(vui, button, gICON_COLOUR);
@@ -96,22 +88,55 @@ static int set_default_button_icon_mod(vui_context_t *vui, int button)
 
 static void cancel_key_listen(vui_context_t *ctx, void *userdata)
 {
+    bind_session_t *session = (bind_session_t *)userdata;
+
     vui_clear_key_listener(ctx);
-    set_default_button_icon_mod(ctx, active_bind_button.ui_button);
+
+    if (session) {
+        set_default_button_icon_mod(ctx, session->ui_button);
+        free(session);
+    }
+
+    update_button_icons(ctx);
+}
+{
+    vui_clear_key_listener(ctx);
+    set_default_button_icon_mod(ctx,);
     reset_active_bind_button();
     update_button_icons(ctx);
 }
 
 static void listen_key_binding(vui_context_t *ctx, int key, void *userdata)
 {
-    vui_set_key_mapping(ctx, active_bind_button.button, key);
+    bind_session_t *session = (bind_session_t *)userdata;
+
+    vui_set_key_mapping(ctx, session->vanilla_btn, key);
+
+    vui_button_update_icon(
+        ctx,
+        session->ui_button,
+        vui_get_keyicon_from_scancode(key)
+    );
+
+    vui_clear_key_listener(ctx);
+
+    free(session);
+}
+{
+    vui_set_key_mapping(ctx, key);
     cancel_key_listen(ctx, userdata);
 }
 
 static void vpi_bind_callback(vui_context_t *ctx, int button, void *userdata)
 {
-    active_bind_button.button = (int) (intptr_t)userdata;
-    active_bind_button.ui_button = button;
+    bind_session_t *session = malloc(sizeof(bind_session_t));
+
+    session->vanilla_btn = (int)(intptr_t)userdata;
+    session->ui_button = button;
+
+    vui_set_key_listener(ctx, listen_key_binding, cancel_key_listen, session);
+}
+{
     vui_set_key_listener(ctx, listen_key_binding, cancel_key_listen, userdata);
 }
 
